@@ -1,4 +1,0 @@
-# Files ignored:
-.env
-.ArcGISTokenCache.json
-sessions/
