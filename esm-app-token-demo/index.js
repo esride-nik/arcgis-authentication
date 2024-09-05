@@ -112,7 +112,7 @@ function getRoute(view) {
 function setupMapView() {
 
     const map = new Map({
-        basemap: "arcgis-navigation"
+        basemap: "streets-vector"
     });
 
     const mapView = new MapView({
