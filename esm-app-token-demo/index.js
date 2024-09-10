@@ -12,6 +12,7 @@ import RouteParameters from "@arcgis/core/rest/support/RouteParameters";
 import FeatureSet from "@arcgis/core/rest/support/FeatureSet";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import IdentityManager from "@arcgis/core/identity/IdentityManager";
+import Search from "@arcgis/core/webdoc/applicationProperties/Search";
 import Axios from "axios";
 
 let tokenExpiration = null;
@@ -20,7 +21,7 @@ let lastGoodToken = null;
 const mapStartLocation = new Point([-116.5414418, 33.8258333]);
 const demoDestination = new Point([-116.3697003, 33.7062298]);
 const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
-const featureLayerURL = "";
+const featureLayerURL = "https://services.arcgis.com/OLiydejKCZTGhvWg/arcgis/rest/services/Baumkataster_Koeln_ExportFeatures/FeatureServer";
 const appTokenURL = "http://localhost:3080/auth"; // The URL of the token server
 
 // Line symbol to use to display the route
@@ -112,60 +113,84 @@ function getRoute(view) {
 function setupMapView() {
 
     const map = new Map({
-        basemap: "streets-vector"
+        basemap: "topo-vector"
     });
 
     const mapView = new MapView({
         map,
         container: "appDiv",
-        center: mapStartLocation,
+        // center: mapStartLocation,
         zoom: 11,
         constraints: {
             snapToZoom: false
         }
     });
 
-    // If you set featureLayerURL to a URL to a private feature service you own, you can show those features on the map.
-    if (featureLayerURL != null && featureLayerURL != "") {
-        const layer = new FeatureLayer({
-            url: featureLayerURL
-        });
-        layer.load()
-        .then(function() {
+    const searchWidget = new Search({
+        view: mapView
+      });
+
+    mapView.when(async () => {
+        console.log('mapView loaded');
+        // // Add the search widget to the top right corner of the view
+        // mapView.ui.add(searchWidget, {
+        //   position: "top-right"
+        // });
+
+        // If you set featureLayerURL to a URL to a private feature service you own, you can show those features on the map.
+        if (featureLayerURL != null && featureLayerURL != "") {
+            const layer = new FeatureLayer({
+                url: featureLayerURL
+            });
             map.add(layer);
-        }, function(error) {
-            console.log(error.toString());
-        })
-        .catch(function(error) {
-            console.log(error.toString());
-        })
+
+            /* HIER WEITER:
+            response from queryExtent() =>
+            {
+    "error": {
+        "code": 499,
+        "message": "Token Required",
+        "messageCode": "GWM_0003",
+        "details": [
+            "Token Required"
+        ]
     }
+}*/
 
-    mapView.when(() => {
-        // create a demo route once the view is loaded
-        addGraphic("start", mapView.center, mapView);
-        setTimeout(() => {
-            addGraphic("finish", demoDestination, mapView);
-            getRoute(mapView);
-        }, 1000);
-    });
 
-    mapView.on("click", (event) => {
-        // when the map is clicked on, start or complete a new route
-        if (mapView.graphics.length === 0) {
-            // start a route when there is no prior start point
-            addGraphic("start", event.mapPoint, mapView);
-          } else if (mapView.graphics.length === 1) {
-            // complete the route from the prior start point to this new point
-            addGraphic("finish", event.mapPoint, mapView);
-            getRoute(mapView);
-          } else {
-            // remote prior route and start a new route
-            mapView.graphics.removeAll();
-            mapView.ui.empty("top-right");
-            addGraphic("start", event.mapPoint, mapView);
-          }
-    });
+            const q = layer.createQuery()
+            q.where = "1=1"
+            const fullExtent = await layer.queryExtent(q)
+            mapView.goTo(fullExtent)
+        }
+    })
+
+
+    // mapView.when(() => {
+    //     // create a demo route once the view is loaded
+    //     addGraphic("start", mapView.center, mapView);
+    //     setTimeout(() => {
+    //         addGraphic("finish", demoDestination, mapView);
+    //         getRoute(mapView);
+    //     }, 1000);
+    // });
+
+    // mapView.on("click", (event) => {
+    //     // when the map is clicked on, start or complete a new route
+    //     if (mapView.graphics.length === 0) {
+    //         // start a route when there is no prior start point
+    //         addGraphic("start", event.mapPoint, mapView);
+    //       } else if (mapView.graphics.length === 1) {
+    //         // complete the route from the prior start point to this new point
+    //         addGraphic("finish", event.mapPoint, mapView);
+    //         getRoute(mapView);
+    //       } else {
+    //         // remote prior route and start a new route
+    //         mapView.graphics.removeAll();
+    //         mapView.ui.empty("top-right");
+    //         addGraphic("start", event.mapPoint, mapView);
+    //       }
+    // });
 }
 
 /**
