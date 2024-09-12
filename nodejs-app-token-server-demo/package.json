@@ -31,7 +31,7 @@
     "cors": "^2.8.5",
     "cross-fetch": "^4.0.0",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "express-session": "^1.18.0",
     "isomorphic-form-data": "^2.0.0",
     "npm-check-updates": "^17.1.1",

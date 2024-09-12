@@ -93,11 +93,11 @@ webServer.post('/auth', function (request, response) {
     const forceRefresh = (request.body.force || '0') == '1';
     esriAppAuth.getToken(forceRefresh)
     .then(function(token) {
-        response.json(token);
-        console.log("Giving a token to " + request.headers["referer"]);
+      response.json(token);
+      console.log("Giving a token to " + request.headers["referer"]);
     })
     .catch(function(error) {
-        response.json(error);
+      response.json(error);
     });
 });
  

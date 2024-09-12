@@ -130,8 +130,13 @@ function requestTokenWithAuth() {
         const session = new ApplicationSession({
             clientId: process.env.CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,
-            duration: configuration.tokenExpirationMinutes
+            duration: configuration.tokenExpirationMinutes,
+            portal: arcgisTokenURL
         });
+
+        console.log('requestTokenWithAuth arcgisTokenURL', arcgisTokenURL)
+        console.log('requestTokenWithAuth session', session)
+
         session.getToken(arcgisTokenURL)
         .then(function(response) {
             // remember the token and when it expires
@@ -164,6 +169,9 @@ function requestTokenWithRequest() {
         parameters.append('grant_type', 'client_credentials');
         parameters.append('expiration', configuration.tokenExpirationMinutes);
 
+        console.log('requestTokenWithRequest arcgisTokenURL', arcgisTokenURL)
+        console.log('requestTokenWithRequest parameters', parameters)
+
         fetch(arcgisTokenURL, { method: 'POST', body: parameters })
         .then(function(response) {
             response.json()
@@ -185,6 +193,7 @@ function requestTokenWithRequest() {
                 reject(errorResponse(500, error.toString()));
             })
         }).catch(function(error) {
+            console.log('requestTokenWithRequest error', error);
             reject(errorResponse(500, error.toString()));
         });
     });
@@ -203,7 +212,8 @@ function getToken(forceRefresh) {
     return new Promise(function(resolve, reject) {
 
         function requestTokenPromise(resolve, reject) {
-            requestTokenWithAuth()
+            // requestTokenWithAuth()
+            requestTokenWithRequest()
             .then(function(responseObject) {
                 resolve(responseObject);
             }, function(error) {
