@@ -144,20 +144,6 @@ function setupMapView() {
             });
             map.add(layer);
 
-            /* HIER WEITER:
-            response from queryExtent() =>
-            {
-    "error": {
-        "code": 499,
-        "message": "Token Required",
-        "messageCode": "GWM_0003",
-        "details": [
-            "Token Required"
-        ]
-    }
-}*/
-
-
             const q = layer.createQuery()
             q.where = "1=1"
             const fullExtent = await layer.queryExtent(q)
