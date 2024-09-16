@@ -5,11 +5,6 @@
  */
 import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
-import Graphic from "@arcgis/core/Graphic";
-import Point from "@arcgis/core/geometry/Point";
-import * as route from "@arcgis/core/rest/route";
-import RouteParameters from "@arcgis/core/rest/support/RouteParameters";
-import FeatureSet from "@arcgis/core/rest/support/FeatureSet";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import IdentityManager from "@arcgis/core/identity/IdentityManager";
 import Search from "@arcgis/core/widgets/Search";
@@ -18,8 +13,6 @@ import Axios from "axios";
 let tokenExpiration = null;
 let lastGoodToken = null;
 
-const demoDestination = new Point([-116.3697003, 33.7062298]);
-const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
 // const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/gebaeude_shp/FeatureServer"; // org => "User does not have permissions to access 'hosted/gebaeude_shp.mapserver'."
 // const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/TestNik/FeatureServer"; // group => "User does not have permissions to access 'hosted/testnik.mapserver'."
 const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/Lades%C3%A4ulen_pro_BL___Kr/FeatureServer/0"; // meiner
@@ -31,84 +24,6 @@ const routeSymbol = {
     color: [50, 150, 255, 0.75],
     width: "5",
 };
-
-/**
- * Display a simple marker symbol on the MapView.
- * @param {string} type The type of point to show, either "start" or "end".
- * @param {Point} point The geographic point to place the marker symbol.
- * @param {MapView} view The mapView to use to display route graphics.
- */
-function addGraphic(type, point, view) {
-    const graphic = new Graphic({
-      symbol: {
-        type: "simple-marker",
-        color: (type === "start") ? "green" : "red",
-        size: "12px",
-        outline: {
-            color: "black",
-            width: "2px",
-        }
-      },
-      geometry: point
-    });
-    view.graphics.add(graphic);
-}
-
-/**
- * Show the route given the start and end locations.
- * @param {MapView} view The mapView to use to display route graphics.
- */
-const getRoute = (view) => {
-
-    const routeParams = new RouteParameters({
-      stops: new FeatureSet({
-        features: view.graphics.toArray()
-      }),
-      returnDirections: true
-    });
-
-    const showRoutes = (routes) => {
-        routes.forEach((result) => {
-          result.route.symbol = routeSymbol;
-          view.graphics.add(result.route,0);
-        });
-    }
-
-    const showDirections = (directions) => {
-        function showRouteDirections(directions) {
-            const directionsList = document.createElement("ol");
-            directions.forEach((result,i) => {
-                const direction = document.createElement("li");
-                direction.innerHTML = result.attributes.text + ((result.attributes.length > 0) ? " (" + result.attributes.length.toFixed(2) + " miles)" : "");
-                directionsList.appendChild(direction);
-            });
-            directionsElement.appendChild(directionsList);
-        }
-
-        const directionsElement = document.createElement("div");
-        directionsElement.innerHTML = "<h3>Directions</h3>";
-        directionsElement.classList = "esri-widget esri-widget--panel esri-directions__scroller directions";
-        directionsElement.style.marginTop = "0";
-        directionsElement.style.padding = "0 15px";
-        directionsElement.style.minHeight = "365px";
-
-        showRouteDirections(directions);
-
-        view.ui.empty("top-right");
-        view.ui.add(directionsElement, "top-right");
-    }
-
-    // TODO: route.solve() doesn't automatically add portal token :(
-    route.solve(`${routeUrl}?token=${lastGoodToken.access_token}`, routeParams) // => error "Invalid token", although portal token is okay and AGO service added to org as utility service
-    // route.solve(routeUrl, routeParams)
-      .then((response) => {
-        showRoutes(response.routeResults)
-        showDirections(response.routeResults[0].directions.features);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-}
 
 /**
  * Create the map and map view once we get the authentication.
@@ -151,42 +66,8 @@ function setupMapView() {
                    console.error(error);
                 }
               });
-
-            // create a demo route once the view is loaded (with FL)
-            addGraphic("start", fullExtent.extent.center, mapView);
-
-            // queryFeatures() automatically adds portal token
-            q.num = 1
-            const destination = await layer.queryFeatures(q)
-            addGraphic("finish", destination?.features[0].geometry ?? demoDestination, mapView);
-            getRoute(mapView);
-        }
-        else {
-            // create a demo route once the view is loaded (without FL)
-            addGraphic("start", mapView.center, mapView);
-            setTimeout(() => {
-                addGraphic("finish", demoDestination, mapView);
-                getRoute(mapView);
-            }, 1000);
         }
     })
-
-    mapView.on("click", (event) => {
-        // when the map is clicked on, start or complete a new route
-        if (mapView.graphics.length === 0) {
-            // start a route when there is no prior start point
-            addGraphic("start", event.mapPoint, mapView);
-          } else if (mapView.graphics.length === 1) {
-            // complete the route from the prior start point to this new point
-            addGraphic("finish", event.mapPoint, mapView);
-            getRoute(mapView);
-          } else {
-            // remote prior route and start a new route
-            mapView.graphics.removeAll();
-            mapView.ui.empty("top-right");
-            addGraphic("start", event.mapPoint, mapView);
-          }
-    });
 }
 
 /**
