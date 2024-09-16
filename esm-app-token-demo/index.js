@@ -21,7 +21,8 @@ let lastGoodToken = null;
 const mapStartLocation = new Point([-116.5414418, 33.8258333]);
 const demoDestination = new Point([-116.3697003, 33.7062298]);
 const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
-// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/gebaeude_shp/FeatureServer"; // org
+// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/gebaeude_shp/FeatureServer"; // org => "User does not have permissions to access 'hosted/gebaeude_shp.mapserver'."
+// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/TestNik/FeatureServer"; // group => "User does not have permissions to access 'hosted/testnik.mapserver'."
 const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/Lades%C3%A4ulen_pro_BL___Kr/FeatureServer/0"; // meiner
 const appTokenURL = "http://localhost:3080/auth"; // The URL of the token server
 
