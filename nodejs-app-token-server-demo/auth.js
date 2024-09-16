@@ -124,6 +124,7 @@ function isArcGISError(arcgisServerResponse) {
  * @returns {Promise} The promise resolves with an object that has the token, expiration, and other properties. It rejects for 
  * any case where a token cannot be determined.
  */
+// TODO: bug in @esri/arcgis-rest-auth/ApplicationSession? => always requests AGO, ignores 'portal' parameter
 function requestTokenWithAuth() {
     return new Promise(function(resolve, reject) {
         const arcgisTokenURL = configuration.appTokenBaseURL + configuration.appTokenPath;
