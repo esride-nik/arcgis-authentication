@@ -217,6 +217,7 @@ function requestApplicationToken() {
                 // remember the token and when it expires
                 lastGoodToken = responseData;
                 tokenExpiration = new Date(Date.now() + (responseData.expires_in * 1000));
+                // TODO: only seems to work with AGE tokens (someone else had the same issue: https://github.com/Esri/developer-support/issues/341#issuecomment-670398992). when using AGO token, JSSDK doesn't add a token param to service requests
                 IdentityManager.registerToken({
                     expires: responseData.expires_in,
                     server: responseData.appTokenBaseURL,
