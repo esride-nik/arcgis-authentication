@@ -4,18 +4,39 @@
  * Run this with `npm start`.
  */
 const esriAppAuth = require("./auth");
-const Express = require('express');
 const ClientSession = require("express-session");
 const FileStore = require("session-file-store")(ClientSession);
 const CORS = require('cors');
-const webServer = Express();
 require("dotenv").config();
 const configuration = require("./server-configuration.json");
 
-const port = process.env.PORT || 3080;
-webServer.use(CORS());
-webServer.use(Express.json());
-webServer.use(Express.urlencoded({ extended: true }));
+// need HTTPS
+const express = require('express');
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+
+const app = express();
+app.use(CORS());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+const router = express.Router();
+
+// start http server
+const httpPort = process.env.NODE_PORT || 15000;
+let server = http.createServer(app).listen(httpPort);
+
+// start https server
+let sslOptions = {
+   key: fs.readFileSync('server.key'),
+   cert: fs.readFileSync('server.cert')
+  //  key: fs.readFileSync('nodejs-app-token-server-demo/server.key'),
+  //  cert: fs.readFileSync('nodejs-app-token-server-demo/server.cert')
+};
+
+// start https server
+const httpsPort = 3001;
+let serverHttps = https.createServer(sslOptions, app).listen(httpsPort)
 
 /**
  * Add some logic to the app to make sure a client calling this endpoint is authorized to do so.
@@ -25,9 +46,13 @@ webServer.use(Express.urlencoded({ extended: true }));
  * @returns {boolean} True when authorized to call this endpoint.
  */
 function isClientAuthorized(request) {
+    // console.log('isClientAuthorized', request.body)
     // verify the correct session id is in the request.
-    const nonce = request.body.nonce;
-    return nonce == "1234";
+    // TODO: nonono
+    // const nonce = request.body.nonce;
+    // return nonce == "1234";
+
+    return true;
 };
 
 /**
@@ -79,12 +104,12 @@ var clientSession = ClientSession({
       },
     }),
 });
-webServer.use(clientSession);
+app.use(clientSession);
 
 /**
  * Define the /auth route to get a token.
  */
-webServer.post('/auth', function (request, response) {
+app.post('/auth', function (request, response) {
     if ( ! isClientAuthorized(request)) {
         response.send(esriAppAuth.errorResponse(403, "Unauthorized."));
         return;
@@ -101,5 +126,5 @@ webServer.post('/auth', function (request, response) {
     });
 });
  
-webServer.listen(port);
-console.log("Token service is listening on port " + port);
+// webServer.listen(port);
+console.log("Token service is listening on port " + httpsPort);

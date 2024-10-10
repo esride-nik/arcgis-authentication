@@ -33,7 +33,8 @@ const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/
 
 const featureLayerURL = null;
 
-const appTokenURL = "http://localhost:3080/auth"; // The URL of the token server
+// const appTokenURL = "http://localhost:3080/auth"; // The URL of the token server
+const appTokenURL = "https://localhost:3001/auth"; // The URL of the token server
 
 // Line symbol to use to display the route
 const routeSymbol = {
