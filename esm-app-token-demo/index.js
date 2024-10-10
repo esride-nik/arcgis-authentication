@@ -122,8 +122,11 @@ function setupMapView() {
         console.log('mapView loaded');
         mapView.ui.add(searchWidget, "top-right");
 
-        // addStreamLayer(mapView, streamLayerURL_s);
-        addStreamLayer(mapView, streamLayerURL_p);
+        // token does not work on secured StreamLayer
+        addStreamLayer(mapView, streamLayerURL_s);
+
+        // unsecured StreamLayer is fine
+        // addStreamLayer(mapView, streamLayerURL_p);
 
         // // If you set featureLayerURL to a URL to a private feature service you own, you can show those features on the map.
         if (featureLayerURL != null && featureLayerURL != "") {
