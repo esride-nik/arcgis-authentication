@@ -61,74 +61,21 @@ function addGraphic(type, point, view) {
     view.graphics.add(graphic);
 }
 
-/**
- * Show the route given the start and end locations.
- * @param {MapView} view The mapView to use to display route graphics.
- */
-const getRoute = (view) => {
-
-    const routeParams = new RouteParameters({
-      stops: new FeatureSet({
-        features: view.graphics.toArray()
-      }),
-      returnDirections: true
-    });
-
-    const showRoutes = (routes) => {
-        routes.forEach((result) => {
-          result.route.symbol = routeSymbol;
-          view.graphics.add(result.route,0);
-        });
-    }
-
-    const showDirections = (directions) => {
-        function showRouteDirections(directions) {
-            const directionsList = document.createElement("ol");
-            directions.forEach((result,i) => {
-                const direction = document.createElement("li");
-                direction.innerHTML = result.attributes.text + ((result.attributes.length > 0) ? " (" + result.attributes.length.toFixed(2) + " miles)" : "");
-                directionsList.appendChild(direction);
-            });
-            directionsElement.appendChild(directionsList);
-        }
-
-        const directionsElement = document.createElement("div");
-        directionsElement.innerHTML = "<h3>Directions</h3>";
-        directionsElement.classList = "esri-widget esri-widget--panel esri-directions__scroller directions";
-        directionsElement.style.marginTop = "0";
-        directionsElement.style.padding = "0 15px";
-        directionsElement.style.minHeight = "365px";
-
-        showRouteDirections(directions);
-
-        view.ui.empty("top-right");
-        view.ui.add(directionsElement, "top-right");
-    }
-
-    // TODO: route.solve() doesn't automatically add portal token :(
-    // route.solve(`${routeUrl}?token=${lastGoodToken.access_token}`, routeParams) // => error "Invalid token", although portal token is okay and AGO service added to org as utility service
-    route.solve(routeUrl, routeParams)
-      .then((response) => {
-        showRoutes(response.routeResults)
-        showDirections(response.routeResults[0].directions.features);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-}
-
 const addStreamLayer = (mapView, streamLayerUrl) => {
+    // ISS layer
+    const issSymbol = {
+      angle: 0,
+      xoffset: 0,
+      yoffset: 0,
+      type: "picture-marker",
+      url: "data:image/png;base64," + "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",
+      contentType: "image/png",
+      width: 30,
+      height: 22.439024390243905
+    };
     let issRenderer = {
         type: "simple",
-        symbol: {
-          type: "simple-marker",
-          size: 6,
-          color: "black",
-          outline: {
-            width: 0.5,
-            color: "white"
-          }
-        }
+        symbol: issSymbol,
       };
 
     // Construct Stream Layer
@@ -175,8 +122,8 @@ function setupMapView() {
         console.log('mapView loaded');
         mapView.ui.add(searchWidget, "top-right");
 
-        addStreamLayer(mapView, streamLayerURL_s);
-        // addStreamLayer(mapView, streamLayerURL_p);
+        // addStreamLayer(mapView, streamLayerURL_s);
+        addStreamLayer(mapView, streamLayerURL_p);
 
         // // If you set featureLayerURL to a URL to a private feature service you own, you can show those features on the map.
         if (featureLayerURL != null && featureLayerURL != "") {
@@ -198,41 +145,11 @@ function setupMapView() {
                 }
               });
 
-            // create a demo route once the view is loaded (with FL)
-            addGraphic("start", fullExtent.extent.center, mapView);
-
             // queryFeatures() automatically adds portal token
             q.num = 1
             const destination = await layer.queryFeatures(q)
-            addGraphic("finish", destination?.features[0].geometry ?? demoDestination, mapView);
-            getRoute(mapView);
-        }
-        else {
-            // create a demo route once the view is loaded (without FL)
-            addGraphic("start", mapView.center, mapView);
-            setTimeout(() => {
-                addGraphic("finish", demoDestination, mapView);
-                getRoute(mapView);
-            }, 1000);
         }
     })
-
-    mapView.on("click", (event) => {
-        // when the map is clicked on, start or complete a new route
-        if (mapView.graphics.length === 0) {
-            // start a route when there is no prior start point
-            addGraphic("start", event.mapPoint, mapView);
-          } else if (mapView.graphics.length === 1) {
-            // complete the route from the prior start point to this new point
-            addGraphic("finish", event.mapPoint, mapView);
-            getRoute(mapView);
-          } else {
-            // remote prior route and start a new route
-            mapView.graphics.removeAll();
-            mapView.ui.empty("top-right");
-            addGraphic("start", event.mapPoint, mapView);
-          }
-    });
 }
 
 /**
