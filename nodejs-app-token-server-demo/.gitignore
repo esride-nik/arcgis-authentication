@@ -1,5 +1,4 @@
 # Files ignored:
 .env
-.env.AGO
 .ArcGISTokenCache.json
 sessions/

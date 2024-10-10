@@ -20,9 +20,19 @@ let lastGoodToken = null;
 
 const demoDestination = new Point([-116.3697003, 33.7062298]);
 const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
+
+// ArcGIS Enterprise
 // const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/gebaeude_shp/FeatureServer"; // org => "User does not have permissions to access 'hosted/gebaeude_shp.mapserver'."
 // const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/TestNik/FeatureServer"; // group => "User does not have permissions to access 'hosted/testnik.mapserver'."
-const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/Lades%C3%A4ulen_pro_BL___Kr/FeatureServer/0"; // meiner
+// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/Lades%C3%A4ulen_pro_BL___Kr/FeatureServer/0"; // mine
+
+// ArcGIS Online
+// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/gebaeude_shp/FeatureServer"; // org => "User does not have permissions to access 'hosted/gebaeude_shp.mapserver'."
+// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/TestNik/FeatureServer"; // group => "User does not have permissions to access 'hosted/testnik.mapserver'."
+// const featureLayerURL = "https://services.arcgis.com/OLiydejKCZTGhvWg/arcgis/rest/services/survey123_9b3561b660a74a088c72ae7125528d4f/FeatureServer"; // mine
+
+const featureLayerURL = null;
+
 const appTokenURL = "http://localhost:3080/auth"; // The URL of the token server
 
 // Line symbol to use to display the route
@@ -99,8 +109,8 @@ const getRoute = (view) => {
     }
 
     // TODO: route.solve() doesn't automatically add portal token :(
-    route.solve(`${routeUrl}?token=${lastGoodToken.access_token}`, routeParams) // => error "Invalid token", although portal token is okay and AGO service added to org as utility service
-    // route.solve(routeUrl, routeParams)
+    // route.solve(`${routeUrl}?token=${lastGoodToken.access_token}`, routeParams) // => error "Invalid token", although portal token is okay and AGO service added to org as utility service
+    route.solve(routeUrl, routeParams)
       .then((response) => {
         showRoutes(response.routeResults)
         showDirections(response.routeResults[0].directions.features);
