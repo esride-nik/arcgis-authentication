@@ -23,21 +23,11 @@ const demoDestination = new Point([-116.3697003, 33.7062298]);
 const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
 
 // ArcGIS Enterprise
-// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/gebaeude_shp/FeatureServer"; // org => "User does not have permissions to access 'hosted/gebaeude_shp.mapserver'."
-// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/TestNik/FeatureServer"; // group => "User does not have permissions to access 'hosted/testnik.mapserver'."
-// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/Lades%C3%A4ulen_pro_BL___Kr/FeatureServer/0"; // mine
-
-// ArcGIS Online
-// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/gebaeude_shp/FeatureServer"; // org => "User does not have permissions to access 'hosted/gebaeude_shp.mapserver'."
-// const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/TestNik/FeatureServer"; // group => "User does not have permissions to access 'hosted/testnik.mapserver'."
-// const featureLayerURL = "https://services.arcgis.com/OLiydejKCZTGhvWg/arcgis/rest/services/survey123_9b3561b660a74a088c72ae7125528d4f/FeatureServer"; // mine
+const featureLayerURL = "https://vsaz0116.esri-de.com/server/rest/services/Hosted/JustALine/FeatureServer/0"
 
 // StreamLayer
 const streamLayerURL_s = "https://vsaz0116.esri-de.com/server/rest/services/ISS-position-secured/StreamServer"; // secured
 const streamLayerURL_p = "https://vsaz0116.esri-de.com/server/rest/services/ISS-position-unsecured/StreamServer"; // public
-
-
-const featureLayerURL = null;
 
 // const appTokenURL = "http://localhost:3080/auth"; // The URL of the token server
 const appTokenURL = "https://localhost:3001/auth"; // The URL of the token server
@@ -185,64 +175,64 @@ function setupMapView() {
         console.log('mapView loaded');
         mapView.ui.add(searchWidget, "top-right");
 
-        // addStreamLayer(mapView.map, streamLayerURL_s);
-        addStreamLayer(mapView, streamLayerURL_p);
+        addStreamLayer(mapView, streamLayerURL_s);
+        // addStreamLayer(mapView, streamLayerURL_p);
 
         // // If you set featureLayerURL to a URL to a private feature service you own, you can show those features on the map.
-        // if (featureLayerURL != null && featureLayerURL != "") {
-        //     const layer = new FeatureLayer({
-        //         url: featureLayerURL
-        //     });
-        //     map.add(layer);
+        if (featureLayerURL != null && featureLayerURL != "") {
+            const layer = new FeatureLayer({
+                url: featureLayerURL
+            });
+            map.add(layer);
 
-        //     const q = layer.createQuery()
-        //     q.where = "1=1"
+            const q = layer.createQuery()
+            q.where = "1=1"
 
-        //     // queryExtent() automatically adds portal token
-        //     const fullExtent = await layer.queryExtent(q)
-        //     console.log('fullExtent', fullExtent.extent)
-        //     await mapView.goTo(fullExtent.extent)
-        //       .catch((error) => {
-        //         if (error.name != "AbortError") {
-        //            console.error(error);
-        //         }
-        //       });
+            // queryExtent() automatically adds portal token
+            const fullExtent = await layer.queryExtent(q)
+            console.log('fullExtent', fullExtent.extent)
+            await mapView.goTo(fullExtent.extent)
+              .catch((error) => {
+                if (error.name != "AbortError") {
+                   console.error(error);
+                }
+              });
 
-        //     // create a demo route once the view is loaded (with FL)
-        //     addGraphic("start", fullExtent.extent.center, mapView);
+            // create a demo route once the view is loaded (with FL)
+            addGraphic("start", fullExtent.extent.center, mapView);
 
-        //     // queryFeatures() automatically adds portal token
-        //     q.num = 1
-        //     const destination = await layer.queryFeatures(q)
-        //     addGraphic("finish", destination?.features[0].geometry ?? demoDestination, mapView);
-        //     getRoute(mapView);
-        // }
-        // else {
-        //     // create a demo route once the view is loaded (without FL)
-        //     addGraphic("start", mapView.center, mapView);
-        //     setTimeout(() => {
-        //         addGraphic("finish", demoDestination, mapView);
-        //         getRoute(mapView);
-        //     }, 1000);
-        // }
+            // queryFeatures() automatically adds portal token
+            q.num = 1
+            const destination = await layer.queryFeatures(q)
+            addGraphic("finish", destination?.features[0].geometry ?? demoDestination, mapView);
+            getRoute(mapView);
+        }
+        else {
+            // create a demo route once the view is loaded (without FL)
+            addGraphic("start", mapView.center, mapView);
+            setTimeout(() => {
+                addGraphic("finish", demoDestination, mapView);
+                getRoute(mapView);
+            }, 1000);
+        }
     })
 
-    // mapView.on("click", (event) => {
-    //     // when the map is clicked on, start or complete a new route
-    //     if (mapView.graphics.length === 0) {
-    //         // start a route when there is no prior start point
-    //         addGraphic("start", event.mapPoint, mapView);
-    //       } else if (mapView.graphics.length === 1) {
-    //         // complete the route from the prior start point to this new point
-    //         addGraphic("finish", event.mapPoint, mapView);
-    //         getRoute(mapView);
-    //       } else {
-    //         // remote prior route and start a new route
-    //         mapView.graphics.removeAll();
-    //         mapView.ui.empty("top-right");
-    //         addGraphic("start", event.mapPoint, mapView);
-    //       }
-    // });
+    mapView.on("click", (event) => {
+        // when the map is clicked on, start or complete a new route
+        if (mapView.graphics.length === 0) {
+            // start a route when there is no prior start point
+            addGraphic("start", event.mapPoint, mapView);
+          } else if (mapView.graphics.length === 1) {
+            // complete the route from the prior start point to this new point
+            addGraphic("finish", event.mapPoint, mapView);
+            getRoute(mapView);
+          } else {
+            // remote prior route and start a new route
+            mapView.graphics.removeAll();
+            mapView.ui.empty("top-right");
+            addGraphic("start", event.mapPoint, mapView);
+          }
+    });
 }
 
 /**
