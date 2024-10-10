@@ -23,10 +23,11 @@ const demoDestination = new Point([-116.3697003, 33.7062298]);
 const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
 
 // ArcGIS Enterprise
-const featureLayerURL = "https://vsaz0116.esri-de.com/server/rest/services/Hosted/JustALine/FeatureServer/0"
+// const featureLayerURL = "https://vsaz0116.esri-de.com/server/rest/services/Hosted/JustALine/FeatureServer/0" // AstronautNik
+const featureLayerURL = "https://vsaz0116.esri-de.com/server/rest/services/Hosted/JustALine_pa/FeatureServer"    // portaladmin
 
 // StreamLayer
-const streamLayerURL_s = "https://vsaz0116.esri-de.com/server/rest/services/ISS-position-secured/StreamServer"; // secured
+const streamLayerURL_s = "https://vsaz0116.esri-de.com/server/rest/services/ISS-position-secured/StreamServer"; // secured portaladmin
 const streamLayerURL_p = "https://vsaz0116.esri-de.com/server/rest/services/ISS-position-unsecured/StreamServer"; // public
 
 // const appTokenURL = "http://localhost:3080/auth"; // The URL of the token server
