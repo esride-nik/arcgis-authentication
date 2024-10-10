@@ -11,6 +11,7 @@ import * as route from "@arcgis/core/rest/route";
 import RouteParameters from "@arcgis/core/rest/support/RouteParameters";
 import FeatureSet from "@arcgis/core/rest/support/FeatureSet";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
+import StreamLayer from "@arcgis/core/layers/StreamLayer";
 import IdentityManager from "@arcgis/core/identity/IdentityManager";
 import Search from "@arcgis/core/widgets/Search";
 import Axios from "axios";
@@ -30,6 +31,11 @@ const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/
 // const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/gebaeude_shp/FeatureServer"; // org => "User does not have permissions to access 'hosted/gebaeude_shp.mapserver'."
 // const featureLayerURL = "https://vsaz0204.esri-de.com/server/rest/services/Hosted/TestNik/FeatureServer"; // group => "User does not have permissions to access 'hosted/testnik.mapserver'."
 // const featureLayerURL = "https://services.arcgis.com/OLiydejKCZTGhvWg/arcgis/rest/services/survey123_9b3561b660a74a088c72ae7125528d4f/FeatureServer"; // mine
+
+// StreamLayer
+const streamLayerURL_s = "https://vsaz0116.esri-de.com/server/rest/services/ISS-position-secured/StreamServer"; // secured
+const streamLayerURL_p = "https://vsaz0116.esri-de.com/server/rest/services/ISS-position-unsecured/StreamServer"; // public
+
 
 const featureLayerURL = null;
 
@@ -121,18 +127,54 @@ const getRoute = (view) => {
       });
 }
 
+const addStreamLayer = (mapView, streamLayerUrl) => {
+    let issRenderer = {
+        type: "simple",
+        symbol: {
+          type: "simple-marker",
+          size: 6,
+          color: "black",
+          outline: {
+            width: 0.5,
+            color: "white"
+          }
+        }
+      };
+
+    // Construct Stream Layer
+    const streamLayer = new StreamLayer({
+        url: streamLayerUrl,
+        purgeOptions: {
+        displayCount: 10000
+        },
+        maxReconnectionAttempts: 100,
+        maxReconnectionInterval: 10,
+        renderer: issRenderer,
+        popupEnabled: true
+    })
+    mapView.map.add(streamLayer);
+
+    mapView.whenLayerView(streamLayer)
+        .then((lv) => {
+            const pt = streamLayer.createPopupTemplate();
+            console.log('slpt', pt);
+            streamLayer.popupTemplate = pt;
+        })
+}
+
 /**
  * Create the map and map view once we get the authentication.
  */
 function setupMapView() {
 
     const map = new Map({
-        basemap: "topo-vector"
+        basemap: "satellite"
     });
 
     const mapView = new MapView({
         map,
-        container: "appDiv"
+        container: "appDiv",
+        popupEnabled: true
     });
 
     const searchWidget = new Search({
@@ -143,61 +185,64 @@ function setupMapView() {
         console.log('mapView loaded');
         mapView.ui.add(searchWidget, "top-right");
 
-        // If you set featureLayerURL to a URL to a private feature service you own, you can show those features on the map.
-        if (featureLayerURL != null && featureLayerURL != "") {
-            const layer = new FeatureLayer({
-                url: featureLayerURL
-            });
-            map.add(layer);
+        // addStreamLayer(mapView.map, streamLayerURL_s);
+        addStreamLayer(mapView, streamLayerURL_p);
 
-            const q = layer.createQuery()
-            q.where = "1=1"
+        // // If you set featureLayerURL to a URL to a private feature service you own, you can show those features on the map.
+        // if (featureLayerURL != null && featureLayerURL != "") {
+        //     const layer = new FeatureLayer({
+        //         url: featureLayerURL
+        //     });
+        //     map.add(layer);
 
-            // queryExtent() automatically adds portal token
-            const fullExtent = await layer.queryExtent(q)
-            console.log('fullExtent', fullExtent.extent)
-            await mapView.goTo(fullExtent.extent)
-              .catch((error) => {
-                if (error.name != "AbortError") {
-                   console.error(error);
-                }
-              });
+        //     const q = layer.createQuery()
+        //     q.where = "1=1"
 
-            // create a demo route once the view is loaded (with FL)
-            addGraphic("start", fullExtent.extent.center, mapView);
+        //     // queryExtent() automatically adds portal token
+        //     const fullExtent = await layer.queryExtent(q)
+        //     console.log('fullExtent', fullExtent.extent)
+        //     await mapView.goTo(fullExtent.extent)
+        //       .catch((error) => {
+        //         if (error.name != "AbortError") {
+        //            console.error(error);
+        //         }
+        //       });
 
-            // queryFeatures() automatically adds portal token
-            q.num = 1
-            const destination = await layer.queryFeatures(q)
-            addGraphic("finish", destination?.features[0].geometry ?? demoDestination, mapView);
-            getRoute(mapView);
-        }
-        else {
-            // create a demo route once the view is loaded (without FL)
-            addGraphic("start", mapView.center, mapView);
-            setTimeout(() => {
-                addGraphic("finish", demoDestination, mapView);
-                getRoute(mapView);
-            }, 1000);
-        }
+        //     // create a demo route once the view is loaded (with FL)
+        //     addGraphic("start", fullExtent.extent.center, mapView);
+
+        //     // queryFeatures() automatically adds portal token
+        //     q.num = 1
+        //     const destination = await layer.queryFeatures(q)
+        //     addGraphic("finish", destination?.features[0].geometry ?? demoDestination, mapView);
+        //     getRoute(mapView);
+        // }
+        // else {
+        //     // create a demo route once the view is loaded (without FL)
+        //     addGraphic("start", mapView.center, mapView);
+        //     setTimeout(() => {
+        //         addGraphic("finish", demoDestination, mapView);
+        //         getRoute(mapView);
+        //     }, 1000);
+        // }
     })
 
-    mapView.on("click", (event) => {
-        // when the map is clicked on, start or complete a new route
-        if (mapView.graphics.length === 0) {
-            // start a route when there is no prior start point
-            addGraphic("start", event.mapPoint, mapView);
-          } else if (mapView.graphics.length === 1) {
-            // complete the route from the prior start point to this new point
-            addGraphic("finish", event.mapPoint, mapView);
-            getRoute(mapView);
-          } else {
-            // remote prior route and start a new route
-            mapView.graphics.removeAll();
-            mapView.ui.empty("top-right");
-            addGraphic("start", event.mapPoint, mapView);
-          }
-    });
+    // mapView.on("click", (event) => {
+    //     // when the map is clicked on, start or complete a new route
+    //     if (mapView.graphics.length === 0) {
+    //         // start a route when there is no prior start point
+    //         addGraphic("start", event.mapPoint, mapView);
+    //       } else if (mapView.graphics.length === 1) {
+    //         // complete the route from the prior start point to this new point
+    //         addGraphic("finish", event.mapPoint, mapView);
+    //         getRoute(mapView);
+    //       } else {
+    //         // remote prior route and start a new route
+    //         mapView.graphics.removeAll();
+    //         mapView.ui.empty("top-right");
+    //         addGraphic("start", event.mapPoint, mapView);
+    //       }
+    // });
 }
 
 /**
